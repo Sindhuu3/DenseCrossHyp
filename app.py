@@ -36,38 +36,33 @@ def get_model():
 
 # ---------------- ROUTES ----------------
 @app.route("/", methods=["GET", "POST"])
+@app.route("/", methods=["GET", "POST"])
 def index():
-    if request.method == "POST":
-        file = request.files.get("image")
-
-        if file:
-            model, class_map = get_model()
+    try:
+        if request.method == "POST":
+            file = request.files.get("image")
+            if not file:
+                return render_template("index.html", error="No image uploaded")
 
             image = Image.open(file).convert("RGB")
             img_arr = preprocess_image(image, IMG_SIZE)
 
-            # Prediction
             preds = model.predict(img_arr, verbose=0)[0]
             grade_idx = int(np.argmax(preds))
             grade = grade_idx + 1
-            confidence = preds[grade_idx] * 100
+            confidence = float(preds[grade_idx] * 100)
 
-            # Grad-CAM
             heatmap = grad_cam_densenet(model, img_arr)
             orientation = detect_orientation(heatmap)
 
             heatmap = cv2.resize(heatmap, IMG_SIZE)
             heatmap_col = cv2.applyColorMap(
-                np.uint8(255 * heatmap),
-                cv2.COLORMAP_JET
+                np.uint8(255 * heatmap), cv2.COLORMAP_JET
             )
 
             overlay = heatmap_col * 0.4 + np.array(image.resize(IMG_SIZE))
 
-            output_path = os.path.join(
-                UPLOAD_FOLDER, "gradcam_result.png"
-            )
-
+            output_path = os.path.join(UPLOAD_FOLDER, "gradcam_result.png")
             cv2.imwrite(
                 output_path,
                 cv2.cvtColor(overlay.astype("uint8"), cv2.COLOR_RGB2BGR)
@@ -81,7 +76,14 @@ def index():
                 image_path=output_path
             )
 
-    return render_template("index.html")
+        return render_template("index.html")
+
+    except Exception as e:
+        print("🔥 ERROR:", e)
+        return render_template(
+            "index.html",
+            error=str(e)
+        )
 
 
 # ---------------- RUN ----------------
