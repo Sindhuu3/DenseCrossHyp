@@ -14,7 +14,7 @@ from utils import preprocess_image
 # ---------------- CONFIG ----------------
 IMG_SIZE = (224, 224)
 UPLOAD_FOLDER = "static/outputs"
-MODEL_PATH = "dfu_densenet_ce_model.h5"   # rename file (NO spaces)
+MODEL_PATH = "dfu_densenet_ce_model.keras"   # rename file (NO spaces)
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
