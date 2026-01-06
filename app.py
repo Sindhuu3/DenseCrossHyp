@@ -1,9 +1,9 @@
-from flask import Flask, render_template, request
-import tensorflow as tf
-import numpy as np
-import cv2
 import os
 import json
+import numpy as np
+import cv2
+import tensorflow as tf
+from flask import Flask, render_template, request
 from PIL import Image
 import matplotlib
 matplotlib.use("Agg")  # REQUIRED for cloud
@@ -14,29 +14,35 @@ from utils import preprocess_image
 # ---------------- CONFIG ----------------
 IMG_SIZE = (224, 224)
 UPLOAD_FOLDER = "static/outputs"
+MODEL_PATH = "dfu_densenet_ce_model.h5"   # rename file (NO spaces)
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-# ---------------- LOAD MODEL ----------------
-model = tf.keras.models.load_model(
-    "dfu_densenet_ce_model (1).h5",
-    compile=False
-)
+# ---------------- LAZY MODEL LOADING ----------------
+model = None
+class_map = None
 
+def get_model():
+    global model, class_map
+    if model is None:
+        model = tf.keras.models.load_model(MODEL_PATH, compile=False)
+        with open("class_map.json") as f:
+            class_map = json.load(f)
+    return model, class_map
 
-with open("class_map.json") as f:
-    class_map = json.load(f)
 
 # ---------------- ROUTES ----------------
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
-        file = request.files["image"]
+        file = request.files.get("image")
 
         if file:
+            model, class_map = get_model()
+
             image = Image.open(file).convert("RGB")
             img_arr = preprocess_image(image, IMG_SIZE)
 
@@ -61,6 +67,7 @@ def index():
             output_path = os.path.join(
                 UPLOAD_FOLDER, "gradcam_result.png"
             )
+
             cv2.imwrite(
                 output_path,
                 cv2.cvtColor(overlay.astype("uint8"), cv2.COLOR_RGB2BGR)
@@ -76,8 +83,7 @@ def index():
 
     return render_template("index.html")
 
+
 # ---------------- RUN ----------------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
-
-
+    app.run(hosthook="0.0.0.0", port=10000)
