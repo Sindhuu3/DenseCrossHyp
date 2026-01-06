@@ -5,6 +5,8 @@ import cv2
 import os
 import json
 from PIL import Image
+import matplotlib
+matplotlib.use("Agg")  # REQUIRED for cloud
 
 from gradcam import grad_cam_densenet, detect_orientation
 from utils import preprocess_image
