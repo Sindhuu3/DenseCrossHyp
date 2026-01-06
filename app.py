@@ -20,9 +20,10 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 # ---------------- LOAD MODEL ----------------
 model = tf.keras.models.load_model(
-    "dfu_densenet_ce_model.keras",
+    "dfu_densenet_ce_model.h5",
     compile=False
 )
+
 
 with open("class_map.json") as f:
     class_map = json.load(f)
