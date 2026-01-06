@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DFU Grade Prediction</title>
+</head>
+<body>
+    <h2>🦶 Diabetic Foot Ulcer Grading</h2>
+
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" name="image" required>
+        <button type="submit">Predict</button>
+    </form>
+
+    {% if grade %}
+        <h3>🩺 Grade: {{ grade }}</h3>
+        <h4>📊 Confidence: {{ confidence }}%</h4>
+        <h4>📍 Spread Direction: {{ orientation }}</h4>
+        <img src="{{ image_path }}" width="350">
+    {% endif %}
+</body>
+</html>
